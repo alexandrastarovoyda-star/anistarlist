@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Main page
+{% endblock %}
+{% block main %}
+{% if session["user_id"] %}
+<form action="/add_folder" method="post">
+    <div class="mb-3">
+        <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="folder_name" placeholder="Folder name" type="text">
+    </div>
+    <div class="mb-3 text-center">
+        <button class="btn btn-primary" type="submit">Add folder</button>
+    </div>
+</form>
+<form action="/delete_folder" method="post">
+    <select name="folder_id">
+        <option value="">Select folder</option>
+        {% for folder in folders %}
+        <option value="{{ folder.id }}"> {{ folder.name }} </option>
+        {% endfor %}
+    </select>
+    <div class="mb-3 text-center">
+        <button class="btn btn-danger" type="submit" onclick="return confirm('Delete this folder?')">Delete folder</button>
+    </div>
+</form>
+<form action="/" method="get">
+    <select name="folder_id" onchange="this.form.submit()">
+        <option value="">All foldes</option>
+
+        {% for folder in folders %}
+            <option value="{{ folder.id }}"
+                {% if selected_folder == folder.id|string %}selected{% endif %}>
+                {{ folder.name }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+<div class="row g-4">
+    {% for anime in animes %}
+        <div class="col-md-3">
+            <div class="card h-100">
+                <img src="{{ anime.image_url }}" class="card-img-top" alt="{{ anime.Title }}">
+                <div class="card-body">
+                    <a href="/anime/{{anime.id}}" class="text-decoration-none">
+                        <h5 class="card-title">{{ anime.Title }}</h5>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

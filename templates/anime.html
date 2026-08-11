@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{anime.Title}}
+{% endblock %}
+
+{% block main %}
+    <h1>{{anime.Title}}</h1>
+    <img src="{{ anime.image_url }}" alt="{{ anime.Title }}">
+    <p>Episodes: {{ anime.Episodes }}</p>
+    <p>{{ anime.Description }}</p>
+    <p> Score: {{anime.score}}</p>
+    <p> Year: {{anime.year}}</p>
+    <p>Season: {{anime.season}}</p>
+    {% if session["user_id"] %}
+    <form action="/add_anime_in_folder" method="post">
+        <input type="hidden" name="anime_id" value="{{ anime.id }}">
+        <div class="mb-3">
+            <select name="folder_id" class="form-select mx-auto w-auto">
+                {%for folder in folders%}
+                <option value="{{folder.id}}">{{folder.name}}</option>
+                {%endfor%}
+            </select>
+        </div>
+        <div class="mb-3">
+            <select name="status" class="form-select mx-auto w-auto">
+                <option value="">None</option>
+                <option value="Watching">Watching</option>
+                <option value="Completed">Completed</option>
+                <option value="My_favorites">My favorites</option>
+            </select>
+        </div>
+        <div class="mb-3 text-center">
+            <button class="btn btn-primary" type="submit">Add</button>
+        </div>
+    </form>
+    {% endif %}
+{% endblock %}

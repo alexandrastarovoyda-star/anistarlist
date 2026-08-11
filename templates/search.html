@@ -1,0 +1,53 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search
+{% endblock %}
+
+{% block main %}
+    <form action="/search" method="post">
+        <div class="mb-3">
+            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="anime_title" placeholder="Anime title" type="text">
+        </div>
+        <div class="mb-3">
+            <input autocomplete="off" class="form-control mx-auto w-auto" name="year" placeholder="Year" type="number">
+        </div>
+        <div class="mb-3">
+            <select name="season" class="form-select mx-auto w-auto">
+                <option value="">All seasons</option>
+                <option value="WINTER">Winter</option>
+                <option value="SPRING">Spring</option>
+                <option value="SUMMER">Summer</option>
+                <option value="FALL">Fall</option>
+            </select>
+            <select name="sorted_by" class="form-select mx-auto w-auto">
+                <option value="">Sort by</option>
+                <option value="rating">Rating</option>
+                <option value="title">Title</option>
+                <option value="year">Year</option>
+            </select>
+            <select name="order" class="form-select mx-auto w-auto">
+                <option value="">⇅</option>
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
+        <div class="mb-3 text-center">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+        <div class="row g-4">
+            {% for anime in animes %}
+                <div class="col-md-3">
+                    <div class="card h-100">
+                        <img src="{{ anime.image_url }}" class="card-img-top" alt="{{ anime.Title }}">
+                        <div class="card-body">
+                            <a href="/anime/{{ anime.id }}" class="text-decoration-none">
+                                <h5 class="card-title">{{ anime.Title }}</h5>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+{% endblock %}
