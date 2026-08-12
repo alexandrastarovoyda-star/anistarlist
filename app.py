@@ -32,6 +32,7 @@ def login_required(f):
 def index():
     folders = []
     animes = []
+    folder_id = None
     if session.get("user_id"):
         # give user an oportunity to chose one of his/her folders
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
@@ -151,11 +152,15 @@ def search():
             flash("Anime not found")
             return render_template("search.html", animes = [])
         return render_template("search.html", animes=rows)
-    return render_template("search.html", animes=[])
+    #show list of anime when user load a page
+    else:
+        start_rows = db.execute("SELECT * FROM Titels ORDER BY score DESC LIMIT 50")
+        return render_template("search.html", animes=start_rows)
 
 
 @app.route("/anime/<int:anime_id>")
 def anime_page(anime_id):
+    folders = None
     rows = db.execute("SELECT * FROM titels WHERE id = ?", anime_id)
     if len(rows) != 1:
         flash("Anime not found")
@@ -168,7 +173,8 @@ def anime_page(anime_id):
             description = data["synopsis"]
             db.execute("UPDATE titels SET Description = ? WHERE id = ?", description, anime_id)
             rows[0]["Description"] = description
-    folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
+    if session.get("user_id"):
+        folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
     # show anime page
     return render_template(
         "anime.html",
