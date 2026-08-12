@@ -1,4 +1,6 @@
-requests
 Flask
 Flask-Session
 cs50
+requests
+Werkzeug
+gunicorn
