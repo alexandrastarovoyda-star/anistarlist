@@ -38,7 +38,7 @@ def index():
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
         folder_id = request.args.get("folder_id")
         if folder_id:
-            animes = db.execute("SELECT Title, image_url FROM Titels WHERE id IN (SELECT anime_id FROM user_anime_infolder WHERE folder_id = ? AND user_id = ?)", folder_id, session["user_id"])
+            animes = db.execute("SELECT id, Title, image_url FROM Titels WHERE id IN (SELECT anime_id FROM user_anime_infolder WHERE folder_id = ? AND user_id = ?)", folder_id, session["user_id"])
         else:
             animes = db.execute("SELECT id, Title, image_url FROM Titels WHERE id IN (SELECT anime_id FROM user_anime_infolder WHERE user_id = ?)", session["user_id"])
     return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id)
@@ -192,6 +192,19 @@ def add_anime_in_folder():
     db.execute("INSERT INTO user_anime_infolder (user_id, anime_id, folder_id, status) VALUES (?, ?, ?, ?)", user_id, anime_id, folder_id, status)
     return redirect(f"/anime/{anime_id}")
 
+@app.route("/delete_anime_from_folder", methods=["POST"])
+# delete anime from folder that exist 
+@login_required
+def delete_anime_from_folder():
+    user_id = session["user_id"]
+    folder_id = request.form.get("selected_folder")
+    anime_id = request.form.get("anime_id")
+    if folder_id:
+        db.execute("DELETE FROM user_anime_infolder WHERE user_id = ? AND anime_id = ? AND folder_id = ?", user_id, anime_id, folder_id)
+    else:
+        db.execute("DELETE FROM user_anime_infolder WHERE user_id = ? AND anime_id = ?", user_id, anime_id)
+    return redirect("/")
+
 @app.route("/add_folder", methods=["POST"])
 @login_required
 # provide oportunity to create new folder
@@ -215,3 +228,4 @@ def delete_folder():
     db.execute("DELETE FROM user_anime_infolder WHERE folder_id = ? AND user_id = ?", folder_id, session["user_id"])
     db.execute("DELETE FROM folders WHERE id = ? AND user_id = ?", folder_id, session["user_id"])
     return redirect("/")
+
