@@ -107,6 +107,11 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/logout", methods=["GET"])
+def logout():
+    session.clear()
+    return redirect("/")
+
 @app.route("/search", methods=["GET", "POST"])
 def search():
     if request.method == "POST":

@@ -9,28 +9,34 @@
         <div class="mb-3">
             <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="anime_title" placeholder="Anime title" type="text">
         </div>
-        <div class="mb-3">
-            <input autocomplete="off" class="form-control mx-auto w-auto" name="year" placeholder="Year" type="number">
-        </div>
-        <div class="mb-3">
-            <select name="season" class="form-select mx-auto w-auto">
-                <option value="">All seasons</option>
-                <option value="WINTER">Winter</option>
-                <option value="SPRING">Spring</option>
-                <option value="SUMMER">Summer</option>
-                <option value="FALL">Fall</option>
-            </select>
-            <select name="sorted_by" class="form-select mx-auto w-auto">
-                <option value="">Sort by</option>
-                <option value="rating">Rating</option>
-                <option value="title">Title</option>
-                <option value="year">Year</option>
-            </select>
-            <select name="order" class="form-select mx-auto w-auto">
-                <option value="">⇅</option>
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
-            </select>
+        <div class="d-flex justify-content-center align-items-center gap-3 p-4">
+            <div class="mb-3">
+                <input autocomplete="off" class="form-control mx-auto w-auto" name="year" placeholder="Year" type="number">
+            </div>
+            <div class="mb-3">
+                <select name="season" class="form-select mx-auto w-auto">
+                    <option value="">All seasons</option>
+                    <option value="WINTER">Winter</option>
+                    <option value="SPRING">Spring</option>
+                    <option value="SUMMER">Summer</option>
+                    <option value="FALL">Fall</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <select name="sorted_by" class="form-select mx-auto w-auto">
+                    <option value="">Sort by</option>
+                    <option value="rating">Rating</option>
+                    <option value="title">Title</option>
+                    <option value="year">Year</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <select name="order" class="form-select mx-auto w-auto">
+                    <option value="">⇅</option>
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </div>
         </div>
         <div class="mb-3 text-center">
             <button class="btn btn-primary" type="submit">Search</button>
