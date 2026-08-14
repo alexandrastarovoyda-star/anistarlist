@@ -25,9 +25,17 @@
         <div class="mb-3">
             <select name="status" class="form-select mx-auto w-auto">
                 <option value="">None</option>
-                <option value="Watching">Watching</option>
-                <option value="Completed">Completed</option>
-                <option value="My_favorites">My favorites</option>
+                {%for status in statuses%}
+                <option value="{{status}}">{{status}}</option>
+                {%endfor%}
+            </select>
+        </div>
+        <div class="mb-3">
+            <select name="rating" class="form-select">
+                <option value="">Choose rating</option>
+                {% for rating in range(1, 11) %}
+                    <option value="{{ rating }}">{{ rating }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="mb-3 text-center">

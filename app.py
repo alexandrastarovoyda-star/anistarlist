@@ -18,6 +18,7 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///anime.db")
 
+statuses = ["Watching", "Completed", "My_favorites"]
 
 def login_required(f):
     @wraps(f)
@@ -38,9 +39,9 @@ def index():
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
         folder_id = request.args.get("folder_id")
         if folder_id:
-            animes = db.execute("SELECT id, Title, image_url FROM Titels WHERE id IN (SELECT anime_id FROM user_anime_infolder WHERE folder_id = ? AND user_id = ?)", folder_id, session["user_id"])
+            animes = db.execute("SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND user_anime_infolder.folder_id = ?", session["user_id"], folder_id)
         else:
-            animes = db.execute("SELECT id, Title, image_url FROM Titels WHERE id IN (SELECT anime_id FROM user_anime_infolder WHERE user_id = ?)", session["user_id"])
+            animes = db.execute("SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?", session["user_id"])
     return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id)
 
 
@@ -183,7 +184,7 @@ def anime_page(anime_id):
     # show anime page
     return render_template(
         "anime.html",
-        anime=rows[0], folders = folders
+        anime=rows[0], folders = folders, statuses = statuses
     )
 
 @app.route("/add_anime_in_folder", methods=["POST"])
@@ -194,7 +195,9 @@ def add_anime_in_folder():
     folder_id = request.form.get("folder_id")
     anime_id = request.form.get("anime_id")
     status = request.form.get("status")
-    db.execute("INSERT INTO user_anime_infolder (user_id, anime_id, folder_id, status) VALUES (?, ?, ?, ?)", user_id, anime_id, folder_id, status)
+    rating = request.form.get("rating")
+    db.execute("INSERT INTO user_anime_infolder (user_id, anime_id, folder_id) VALUES (?, ?, ?)", user_id, anime_id, folder_id)
+    db.execute("UPDATE user_anime_infolder SET status = ?, rating = ? WHERE user_id = ? AND anime_id = ?", status, rating, user_id, anime_id)
     return redirect(f"/anime/{anime_id}")
 
 @app.route("/delete_anime_from_folder", methods=["POST"])

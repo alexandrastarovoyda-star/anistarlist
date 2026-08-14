@@ -26,6 +26,12 @@
                     <a href="/anime/{{anime.id}}" class="text-decoration-none">
                         <h5 class="card-title">{{ anime.Title }}</h5>
                     </a>
+                    {%if anime.status%}
+                    <p>{{anime.status}}</p>
+                    {%endif%}
+                    {%if anime.rating%}
+                    <p>{{anime.rating}}</p>
+                    {%endif%}
                     <form action="/delete_anime_from_folder" method="post" class="p-3 mt-auto">
                         <input type="hidden" name="selected_folder" value="{{ selected_folder }}">
                         <input type="hidden" name="anime_id" value="{{ anime.id }}">
