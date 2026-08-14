@@ -21,17 +21,29 @@
     {% for anime in animes %}
         <div class="col-md-3">
             <div class="card h-100">
+                <form action="/" method="post" class="p-1">
+                    <input type="hidden" name="anime_id" value="{{ anime.id }}">
+                    <input type="hidden" name="folder_id" value="{{ selected_folder }}">
+                    <div class="d-flex justify-content-center align-items-center gap-1 p-1 bg-success">
+                        <select name = "status" class="form-select mx-auto w-auto" onchange="this.form.submit()">
+                            <option value="">Chose status</option>
+                            {%for status in statuses%}
+                            <option value="{{status}}" {% if anime.status == status %}selected{% endif %}>{{status}}</option>
+                            {%endfor%}
+                        </select>
+                        <select name="rating" class="form-select mx-auto w-auto" onchange="this.form.submit()">
+                            <option value="">Chose rating</option>
+                            {% for rating in range(1, 11) %}
+                                <option value="{{ rating }}" {% if anime.rating|string == rating|string %}selected{% endif %}>{{ rating }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
                 <img src="{{ anime.image_url }}" class="card-img-top" alt="{{ anime.Title }}">
                 <div class="card-body d-flex flex-column">
                     <a href="/anime/{{anime.id}}" class="text-decoration-none">
                         <h5 class="card-title">{{ anime.Title }}</h5>
                     </a>
-                    {%if anime.status%}
-                    <p>{{anime.status}}</p>
-                    {%endif%}
-                    {%if anime.rating%}
-                    <p>{{anime.rating}}</p>
-                    {%endif%}
                     <form action="/delete_anime_from_folder" method="post" class="p-3 mt-auto">
                         <input type="hidden" name="selected_folder" value="{{ selected_folder }}">
                         <input type="hidden" name="anime_id" value="{{ anime.id }}">

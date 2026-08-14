@@ -38,11 +38,19 @@ def index():
         # give user an oportunity to chose one of his/her folders
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
         folder_id = request.args.get("folder_id")
+        if request.method == "POST":
+            status = request.form.get("status")
+            rating = request.form.get("rating")
+            anime_id = request.form.get("anime_id")
+            if status is not None:
+                db.execute("UPDATE user_anime_infolder SET status = ? WHERE user_id = ? AND anime_id = ?", status, session["user_id"], anime_id)
+            if rating is not None:
+                db.execute("UPDATE user_anime_infolder SET rating = ? WHERE user_id = ? AND anime_id = ?", rating, session["user_id"], anime_id)
         if folder_id:
             animes = db.execute("SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND user_anime_infolder.folder_id = ?", session["user_id"], folder_id)
         else:
             animes = db.execute("SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?", session["user_id"])
-    return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id)
+    return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id, statuses = statuses)
 
 
 @app.route("/register", methods=["POST", "GET"])
