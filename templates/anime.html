@@ -5,42 +5,56 @@
 {% endblock %}
 
 {% block main %}
-    <h1>{{anime.Title}}</h1>
-    <img src="{{ anime.image_url }}" alt="{{ anime.Title }}">
-    <p>Episodes: {{ anime.Episodes }}</p>
-    <p>{{ anime.Description }}</p>
-    <p> Score: {{anime.score}}</p>
-    <p> Year: {{anime.year}}</p>
-    <p>Season: {{anime.season}}</p>
-    {% if session["user_id"] %}
-    <form action="/add_anime_in_folder" method="post">
-        <input type="hidden" name="anime_id" value="{{ anime.id }}">
-        <div class="mb-3">
-            <select name="folder_id" class="form-select mx-auto w-auto">
-                {%for folder in folders%}
-                <option value="{{folder.id}}">{{folder.name}}</option>
-                {%endfor%}
-            </select>
+    <div {% if session["user_id"] %}class="d-flex justify-content-center align-items-center gap-5 p-2"{%endif%}>
+        <h1>{{anime.Title}}</h1>
+    </div>
+    <div {% if session["user_id"] %}class="d-flex justify-content-center align-items-center gap-5 p-2"{%endif%}>
+        <div class="me-auto">
+            {% if session["user_id"] %}
+            <form action = "/change_info_about_anime" method="post">
+                <input type="hidden" name="anime_id" value="{{ anime.id }}">
+                <div class="d-flex justify-content-center align-items-center gap-2 p-1">
+                    <div class="mb-3">
+                        <select name="status" class="form-select mx-auto w-auto" onchange="this.form.submit()">
+                            <option value="">Chose status</option>
+                            {%for status in statuses%}
+                            <option value="{{status}}" {% if anime.status == status %}selected{% endif %}>{{status}}</option>
+                            {%endfor%}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <select name="rating" class="form-select" onchange="this.form.submit()">
+                            <option value="">Choose rating</option>
+                            {% for rating in range(1, 11) %}
+                                <option value="{{ rating }}" {% if anime.rating|string == rating|string %}selected{% endif %}>{{ rating }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </form>
+            {%endif%}
+            <img src="{{ anime.image_url }}" alt="{{ anime.Title }}">
+            <p>Episodes: {{ anime.Episodes }}</p>
+            <p>{{ anime.Description }}</p>
+            <p> Score: {{anime.score}}</p>
+            <p> Year: {{anime.year}}</p>
+            <p>Season: {{anime.season}}</p>
         </div>
-        <div class="mb-3">
-            <select name="status" class="form-select mx-auto w-auto">
-                <option value="">None</option>
-                {%for status in statuses%}
-                <option value="{{status}}">{{status}}</option>
-                {%endfor%}
-            </select>
-        </div>
-        <div class="mb-3">
-            <select name="rating" class="form-select">
-                <option value="">Choose rating</option>
-                {% for rating in range(1, 11) %}
-                    <option value="{{ rating }}">{{ rating }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-3 text-center">
-            <button class="btn btn-primary" type="submit">Add</button>
-        </div>
-    </form>
+        {% if session["user_id"] %}
+        <form action="/add_anime_in_folder" method="post" class="mb-auto">
+            <input type="hidden" name="anime_id" value="{{ anime.id }}">
+            <div class="mb-3">
+                <select name="folder_id" class="form-select mx-auto w-auto">
+                    <option value="">Choose folder</option>
+                    {%for folder in folders%}
+                    <option value="{{folder.id}}">{{folder.name}}</option>
+                    {%endfor%}
+                </select>
+            </div>
+            <div class="mb-3 text-center">
+                <button class="btn btn-primary" type="submit">Add</button>
+            </div>
+        </form>
+    </div>
     {% endif %}
 {% endblock %}

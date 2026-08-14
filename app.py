@@ -38,14 +38,6 @@ def index():
         # give user an oportunity to chose one of his/her folders
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
         folder_id = request.args.get("folder_id")
-        if request.method == "POST":
-            status = request.form.get("status")
-            rating = request.form.get("rating")
-            anime_id = request.form.get("anime_id")
-            if status is not None:
-                db.execute("UPDATE user_anime_infolder SET status = ? WHERE user_id = ? AND anime_id = ?", status, session["user_id"], anime_id)
-            if rating is not None:
-                db.execute("UPDATE user_anime_infolder SET rating = ? WHERE user_id = ? AND anime_id = ?", rating, session["user_id"], anime_id)
         if folder_id:
             animes = db.execute("SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND user_anime_infolder.folder_id = ?", session["user_id"], folder_id)
         else:
@@ -175,7 +167,11 @@ def search():
 @app.route("/anime/<int:anime_id>")
 def anime_page(anime_id):
     folders = None
-    rows = db.execute("SELECT * FROM titels WHERE id = ?", anime_id)
+    if session.get("user_id"):
+        rows = db.execute("SELECT Titels.*, user_anime_infolder.rating, user_anime_infolder.status FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND Titels.id = ? GROUP BY Titels.id", session["user_id"], anime_id)
+        folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
+    else:
+        rows = db.execute("SELECT * FROM titels WHERE id = ?", anime_id)
     if len(rows) != 1:
         flash("Anime not found")
         return render_template("search.html", animes=[])
@@ -187,8 +183,7 @@ def anime_page(anime_id):
             description = data["synopsis"]
             db.execute("UPDATE titels SET Description = ? WHERE id = ?", description, anime_id)
             rows[0]["Description"] = description
-    if session.get("user_id"):
-        folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
+    
     # show anime page
     return render_template(
         "anime.html",
@@ -202,10 +197,13 @@ def add_anime_in_folder():
     user_id = session["user_id"]
     folder_id = request.form.get("folder_id")
     anime_id = request.form.get("anime_id")
-    status = request.form.get("status")
-    rating = request.form.get("rating")
-    db.execute("INSERT INTO user_anime_infolder (user_id, anime_id, folder_id) VALUES (?, ?, ?)", user_id, anime_id, folder_id)
-    db.execute("UPDATE user_anime_infolder SET status = ?, rating = ? WHERE user_id = ? AND anime_id = ?", status, rating, user_id, anime_id)
+    if folder_id:
+        rows = db.execute("SELECT * FROM user_anime_infolder WHERE user_id = ? AND anime_id = ? AND folder_id = ?", user_id, anime_id, folder_id)
+        if rows:
+            flash("This anime already in this folder")
+            return redirect(f"/anime/{anime_id}")
+        else:
+            db.execute("INSERT INTO user_anime_infolder (user_id, anime_id, folder_id) VALUES (?, ?, ?)", user_id, anime_id, folder_id)
     return redirect(f"/anime/{anime_id}")
 
 @app.route("/delete_anime_from_folder", methods=["POST"])
@@ -245,3 +243,14 @@ def delete_folder():
     db.execute("DELETE FROM folders WHERE id = ? AND user_id = ?", folder_id, session["user_id"])
     return redirect("/")
 
+@app.route("/change_info_about_anime", methods=["POST"])
+@login_required
+def change_info_about_anime():
+    status = request.form.get("status")
+    rating = request.form.get("rating")
+    anime_id = request.form.get("anime_id")
+    if status is not None:
+        db.execute("UPDATE user_anime_infolder SET status = ? WHERE user_id = ? AND anime_id = ?", status, session["user_id"], anime_id)
+    if rating is not None:
+        db.execute("UPDATE user_anime_infolder SET rating = ? WHERE user_id = ? AND anime_id = ?", rating, session["user_id"], anime_id)
+    return redirect(request.referrer or "/")
