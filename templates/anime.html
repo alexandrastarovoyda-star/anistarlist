@@ -13,7 +13,7 @@
             {% if session["user_id"] %}
             <form action = "/change_info_about_anime" method="post">
                 <input type="hidden" name="anime_id" value="{{ anime.id }}">
-                <div class="d-flex justify-content-center align-items-center gap-2 p-1">
+                <div class="d-flex justify-content-center align-items-center gap-2 p-1 bg-success ">
                     <div class="mb-3">
                         <select name="status" class="form-select mx-auto w-auto" onchange="this.form.submit()">
                             <option value="">Chose status</option>
@@ -33,12 +33,14 @@
                 </div>
             </form>
             {%endif%}
-            <img src="{{ anime.image_url }}" alt="{{ anime.Title }}">
-            <p>Episodes: {{ anime.Episodes }}</p>
-            <p>{{ anime.Description }}</p>
-            <p> Score: {{anime.score}}</p>
-            <p> Year: {{anime.year}}</p>
-            <p>Season: {{anime.season}}</p>
+            <div>
+                <img src="{{ anime.image_url }}" alt="{{ anime.Title }}">
+                <p>Episodes: {{ anime.Episodes }}</p>
+                <p>{{ anime.Description }}</p>
+                <p> Score: {{anime.score}}</p>
+                <p> Year: {{anime.year}}</p>
+                <p>Season: {{anime.season}}</p>
+            </div>
         </div>
         {% if session["user_id"] %}
         <form action="/add_anime_in_folder" method="post" class="mb-auto">
