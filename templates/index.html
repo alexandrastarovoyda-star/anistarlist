@@ -6,16 +6,27 @@
 {% block main %}
 {% if session["user_id"] %}
 <form action="/" method="get" class="p-4">
-    <select name="folder_id" onchange="this.form.submit()" class="form-select">
-        <option value="">All folders</option>
+    <div class="d-flex justify-content-center align-items-center gap-3 p-2 bg-success">
+        <select name="folder_id" onchange="this.form.submit()" class="form-select">
+            <option value="">All folders</option>
 
-        {% for folder in folders %}
-            <option value="{{ folder.id }}"
-                {% if selected_folder == folder.id|string %}selected{% endif %}>
-                {{ folder.name }}
-            </option>
-        {% endfor %}
-    </select>
+            {% for folder in folders %}
+                <option value="{{ folder.id }}" {% if selected_folder == folder.id|string %}selected{% endif %}>{{ folder.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="selected_status" onchange="this.form.submit()" class="form-select">
+            <option value="">All statuses</option>
+            {% for status in statuses %}
+                <option value="{{ status }}" {% if selected_status == status|string %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+        </select>
+        <select name="selected_rating" onchange="this.form.submit()" class="form-select">
+            <option value="">All ratings</option>
+            {% for rating in range(1, 11) %}
+                <option value="{{ rating }}" {% if selected_rating == rating|string %}selected{% endif %}>{{ rating }}</option>
+            {% endfor %}
+        </select>
+    </div>
 </form>
 <div class="row g-4">
     {% for anime in animes %}

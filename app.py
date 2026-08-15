@@ -34,15 +34,28 @@ def index():
     folders = []
     animes = []
     folder_id = None
+    status = None
+    rating = None
     if session.get("user_id"):
-        # give user an oportunity to chose one of his/her folders
+        # give user an oportunity to chose one of his/her folders, status or rating
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
         folder_id = request.args.get("folder_id")
+        status = request.args.get("selected_status")
+        rating = request.args.get("selected_rating")
+        query = "SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?"
+        parameters = []
+        parameters.append(session["user_id"])
         if folder_id:
-            animes = db.execute("SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND user_anime_infolder.folder_id = ?", session["user_id"], folder_id)
-        else:
-            animes = db.execute("SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?", session["user_id"])
-    return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id, statuses = statuses)
+            query += " AND user_anime_infolder.folder_id = ?"
+            parameters.append(folder_id)
+        if status:
+            query += " AND user_anime_infolder.status = ?"
+            parameters.append(status)
+        if rating:
+            query += " AND user_anime_infolder.rating = ?"
+            parameters.append(int(rating))
+        animes = db.execute(query, *parameters)
+    return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id, statuses = statuses, selected_rating = rating, selected_status = status)
 
 
 @app.route("/register", methods=["POST", "GET"])
@@ -51,21 +64,21 @@ def register():
         # Check that user provide all data and password and confirmation are simalar
         if not request.form.get("username"):
             flash("must provide username")
-            return redirect("/register")
+            return render_template("register.html")
         elif not request.form.get("password"):
             flash("must provide password")
-            return redirect("/register")
+            return render_template("register.html")
         elif not request.form.get("confirmation"):
             flash("must provide confirmation")
-            return redirect("/register")
+            return render_template("register.html")
         elif (request.form.get("password") != request.form.get("confirmation")):
             flash("must provide same password and confirmation")
-            return redirect("/register")
+            return render_template("register.html")
         # check if username already exist
         rows = db.execute("SELECT * FROM users WHERE user_name = ? ", request.form.get("username"))
         if (len(rows) != 0):
             flash("This user already exist")
-            return redirect("/register")
+            return render_template("register.html")
         # save new user data
         username = request.form.get("username")
         hashed_password = generate_password_hash(request.form.get("password"))
@@ -85,11 +98,11 @@ def login():
         # Ensure username was submitted
         if not request.form.get("username"):
             flash("must provide username")
-            return redirect("/login")
+            return render_template("login.html")
         # Ensure password was submitted
         elif not request.form.get("password"):
             flash("must provide password")
-            return redirect("/login")
+            return render_template("login.html")
         # Query database for username
         rows = db.execute(
             "SELECT * FROM users WHERE user_name = ?", request.form.get("username")
@@ -99,7 +112,7 @@ def login():
             rows[0]["hash"], request.form.get("password")
         ):
             flash("invalid username and/or password")
-            return redirect("/login")
+            return render_template("login.html")
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
         # Redirect user to home page
@@ -115,13 +128,17 @@ def logout():
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
+    anime_title = ""
+    year = ""
+    season = ""
+    sorted_by = ""
+    order = ""
     if request.method == "POST":
-        anime_title = request.form.get("anime_title")
-        year = request.form.get("year")
-        season = request.form.get("season")
-        sorted_by = request.form.get("sorted_by")
-        order = request.form.get("order")
-
+        anime_title = request.form.get("anime_title", "")
+        year = request.form.get("year", "")
+        season = request.form.get("season", "")
+        sorted_by = request.form.get("sorted_by", "")
+        order = request.form.get("order", "")
         query = "SELECT * FROM titels WHERE 1=1"
         parameters = []
         # add parameters to request if them exist
@@ -129,6 +146,10 @@ def search():
             query += " AND LOWER(Title) LIKE LOWER(?)"
             parameters.append("%" + anime_title + "%")
         if year:
+            year = int(year)
+            if year < 0:
+                flash("Year cannot be negative")
+                return render_template("search.html", animes=start_rows)
             query += " AND year = ?"
             parameters.append(int(year))
         if season:
@@ -151,17 +172,16 @@ def search():
             query += " ORDER BY score DESC" 
 
         query += " LIMIT 50"
-
         rows = db.execute(query, *parameters)
         # check if anime exist in db
         if len(rows) == 0:
             flash("Anime not found")
-            return render_template("search.html", animes = [])
-        return render_template("search.html", animes=rows)
+            return render_template("search.html", animes = [], anime_title=anime_title, year=year, season=season, sorted_by=sorted_by, order=order)
+        return render_template("search.html", animes=rows, anime_title=anime_title, year=year, season=season, sorted_by=sorted_by, order=order)
     #show list of anime when user load a page
     else:
         start_rows = db.execute("SELECT * FROM Titels ORDER BY score DESC LIMIT 50")
-        return render_template("search.html", animes=start_rows)
+        return render_template("search.html", animes=start_rows, anime_title=anime_title, year=year, season=season, sorted_by=sorted_by, order=order)
 
 
 @app.route("/anime/<int:anime_id>")
@@ -172,10 +192,10 @@ def anime_page(anime_id):
         flash("Anime not found")
         return render_template("search.html", animes=[])
     if session.get("user_id"):
-            check = db.execute("SELECT rating, status FROM user_anime_infolder WHERE user_id = ? AND anime_id = ?", session["user_id"], anime_id)
-            if check:
-                rows = db.execute("SELECT Titels.*, user_anime_infolder.rating, user_anime_infolder.status FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND Titels.id = ? GROUP BY Titels.id", session["user_id"], anime_id)
-            folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
+        check = db.execute("SELECT rating, status FROM user_anime_infolder WHERE user_id = ? AND anime_id = ?", session["user_id"], anime_id)
+        if check:
+            rows = db.execute("SELECT Titels.*, user_anime_infolder.rating, user_anime_infolder.status FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND Titels.id = ? GROUP BY Titels.id", session["user_id"], anime_id)
+        folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
     # add discription from myanimelist if it isn`t in db
     if not rows[0]["Description"]:
         response = requests.get(f"https://api.jikan.moe/v4/anime/{rows[0]['mal_id']}")
