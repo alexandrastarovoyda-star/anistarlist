@@ -42,12 +42,14 @@ def index():
         folder_id = request.args.get("folder_id")
         status = request.args.get("selected_status")
         rating = request.args.get("selected_rating")
-        query = "SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?"
+        query = "SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?"
         parameters = []
         parameters.append(session["user_id"])
         if folder_id:
             query += " AND user_anime_infolder.folder_id = ?"
             parameters.append(folder_id)
+        else:
+            query = "SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?"
         if status:
             query += " AND user_anime_infolder.status = ?"
             parameters.append(status)
@@ -270,8 +272,8 @@ def change_info_about_anime():
     status = request.form.get("status")
     rating = request.form.get("rating")
     anime_id = request.form.get("anime_id")
-    if status is not None:
+    if status:
         db.execute("UPDATE user_anime_infolder SET status = ? WHERE user_id = ? AND anime_id = ?", status, session["user_id"], anime_id)
-    if rating is not None:
+    if rating:
         db.execute("UPDATE user_anime_infolder SET rating = ? WHERE user_id = ? AND anime_id = ?", rating, session["user_id"], anime_id)
     return redirect(request.referrer or "/")
