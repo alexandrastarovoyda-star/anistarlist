@@ -307,8 +307,11 @@ def change_info_about_anime():
     status = request.form.get("status")
     rating = request.form.get("rating")
     anime_id = request.form.get("anime_id")
+    rows = db.execute("SELECT * FROM user_anime_statuses WHERE User_id = ? AND anime_id = ?", session["user_id"], anime_id)
+    if not rows:
+        db.execute("INSERT INTO user_anime_statuses (user_id, anime_id) VALUES (?,?)", session["user_id"], anime_id)
     if status:
-        db.execute("UPDATE user_anime_infolder SET status = ? WHERE user_id = ? AND anime_id = ?", status, session["user_id"], anime_id)
+        db.execute("UPDATE user_anime_statuses SET status = ? WHERE user_id = ? AND anime_id = ?", status, session["user_id"], anime_id)
     if rating:
-        db.execute("UPDATE user_anime_infolder SET rating = ? WHERE user_id = ? AND anime_id = ?", rating, session["user_id"], anime_id)
+        db.execute("UPDATE user_anime_statuses SET rating = ? WHERE user_id = ? AND anime_id = ?", rating, session["user_id"], anime_id)
     return redirect(request.referrer or "/")
