@@ -42,8 +42,9 @@ def index():
         folder_id = request.args.get("folder_id")
         status = request.args.get("selected_status")
         rating = request.args.get("selected_rating")
-        query = "SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?"
+        query = "SELECT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? JOIN user_anime_statuses OM user_anime_statuser.anime_id = Titels.id WHERE user_anime_statuses_user_id = ?"
         parameters = []
+        parameters.append(session["user_id"])
         parameters.append(session["user_id"])
         if folder_id:
             query += " AND user_anime_infolder.folder_id = ?"
@@ -51,10 +52,10 @@ def index():
         else:
             query = "SELECT DISTINCT Titels.id, Titels.Title, Titels.image_url, user_anime_infolder.status, user_anime_infolder.rating FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ?"
         if status:
-            query += " AND user_anime_infolder.status = ?"
+            query += " AND user_anime_statuses.status = ?"
             parameters.append(status)
         if rating:
-            query += " AND user_anime_infolder.rating = ?"
+            query += " AND user_anime_statuses.rating = ?"
             parameters.append(int(rating))
         animes = db.execute(query, *parameters)
     return render_template("index.html", folders=folders, animes = animes, selected_folder=folder_id, statuses = statuses, selected_rating = rating, selected_status = status)
