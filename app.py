@@ -199,13 +199,30 @@ def anime_page(anime_id):
             rows = db.execute("SELECT Titels.*, user_anime_infolder.rating, user_anime_infolder.status FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND Titels.id = ? GROUP BY Titels.id", session["user_id"], anime_id)
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
     # add discription from myanimelist if it isn`t in db
+        # Add description from MyAnimeList if it isn't in the database
     if not rows[0]["Description"]:
-        response = requests.get(f"https://api.jikan.moe/v4/anime/{rows[0]['mal_id']}")
-        if response.status_code == 200:
+        try:
+            response = requests.get(
+                f"https://api.jikan.moe/v4/anime/{rows[0]['mal_id']}",
+                timeout=5
+            )
+            response.raise_for_status()
+
             data = response.json()["data"]
-            description = data["synopsis"]
-            db.execute("UPDATE titels SET Description = ? WHERE id = ?", description, anime_id)
-            rows[0]["Description"] = description
+            description = data.get("synopsis")
+
+            if description:
+                db.execute(
+                    "UPDATE titels SET Description = ? WHERE id = ?",
+                    description,
+                    anime_id
+                )
+                rows[0]["Description"] = description
+
+        except requests.exceptions.RequestException:
+            pass
+        except (KeyError, ValueError, TypeError):
+            pass
     
     # show anime page
     return render_template(
