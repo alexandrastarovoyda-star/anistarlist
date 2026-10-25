@@ -212,9 +212,9 @@ def anime_page(anime_id):
         flash("Anime not found")
         return render_template("search.html", animes=[])
     if session.get("user_id"):
-        check = db.execute("SELECT rating, status FROM user_anime_infolder WHERE user_id = ? AND anime_id = ?", session["user_id"], anime_id)
+        check = db.execute("SELECT rating, status FROM user_anime_statuses WHERE user_id = ? AND anime_id = ?", session["user_id"], anime_id)
         if check:
-            rows = db.execute("SELECT Titels.*, user_anime_infolder.rating, user_anime_infolder.status FROM Titels JOIN user_anime_infolder ON user_anime_infolder.anime_id = Titels.id WHERE user_anime_infolder.user_id = ? AND Titels.id = ? GROUP BY Titels.id", session["user_id"], anime_id)
+            rows = db.execute("SELECT Titels.*, user_anime_statuses.rating, user_anime_statuses.status FROM Titels JOIN user_anime_statuses ON user_anime_statuses.anime_id = Titels.id WHERE user_anime_statuses.user_id = ? AND Titels.id = ? GROUP BY Titels.id", session["user_id"], anime_id)
         folders = db.execute("SELECT * FROM folders WHERE user_id = ?", session["user_id"])
     # add discription from myanimelist if it isn`t in db
         # Add description from MyAnimeList if it isn't in the database
