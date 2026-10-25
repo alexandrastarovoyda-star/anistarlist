@@ -222,7 +222,7 @@ def anime_page(anime_id):
         try:
             response = requests.get(
                 f"https://api.jikan.moe/v4/anime/{rows[0]['mal_id']}",
-                timeout=5
+                timeout=1
             )
             response.raise_for_status()
 
